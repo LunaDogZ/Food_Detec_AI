@@ -25,12 +25,24 @@ fi
 # Auto-create virtual environment and install dependencies if missing
 if [ ! -d "venv" ]; then
     echo "   >> Creating Python virtual environment (venv)..."
-    python3 -m venv venv
+    if command -v python3 &>/dev/null; then
+        python3 -m venv venv
+    else
+        python -m venv venv
+    fi
     echo "   >> Installing backend dependencies..."
-    source venv/bin/activate
+    if [ -f "venv/Scripts/activate" ]; then
+        source venv/Scripts/activate
+    else
+        source venv/bin/activate
+    fi
     pip install -r requirements.txt
 else
-    source venv/bin/activate
+    if [ -f "venv/Scripts/activate" ]; then
+        source venv/Scripts/activate
+    else
+        source venv/bin/activate
+    fi
 fi
 
 # Run database migrations automatically
@@ -40,7 +52,7 @@ if command -v alembic &> /dev/null && [ -f "alembic.ini" ]; then
 fi
 
 echo "   >> Starting Backend API + Web UI (FastAPI)..."
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload &
 BACKEND_PID=$!
 echo "   >> Open http://localhost:8000 for the web app (API docs: http://localhost:8000/docs )"
 echo "   >> PID: $BACKEND_PID"
