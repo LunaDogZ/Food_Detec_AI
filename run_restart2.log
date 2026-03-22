@@ -1,0 +1,202 @@
+=======================================
+  Starting Food AI Project Services
+  (Auto-setup enabled)
+=======================================
+1. Setting up Backend...
+   >> Running database migrations...
+Traceback (most recent call last):
+  File "/home/lunadogz/Food-AI/backend/venv/bin/alembic", line 8, in <module>
+    sys.exit(main())
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 641, in main
+    CommandLine(prog=prog).main(argv=argv)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 631, in main
+    self.run_cmd(cfg, options)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 608, in run_cmd
+    fn(
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/command.py", line 403, in upgrade
+    script.run_env()
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/script/base.py", line 583, in run_env
+    util.load_python_file(self.dir, "env.py")
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/util/pyfiles.py", line 95, in load_python_file
+    module = load_module_py(module_id, path)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/util/pyfiles.py", line 113, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/home/lunadogz/Food-AI/backend/alembic/env.py", line 78, in <module>
+    run_migrations_online()
+  File "/home/lunadogz/Food-AI/backend/alembic/env.py", line 60, in run_migrations_online
+    connectable = engine_from_config(
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 811, in engine_from_config
+    return create_engine(url, **options)
+  File "<string>", line 2, in create_engine
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/util/deprecations.py", line 281, in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 552, in create_engine
+    entrypoint = u._get_entrypoint()
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/url.py", line 755, in _get_entrypoint
+    cls = registry.load(name)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 374, in load
+    raise exc.NoSuchModuleError(
+sqlalchemy.exc.NoSuchModuleError: Can't load plugin: sqlalchemy.dialects:driver
+   >> Starting Backend API (FastAPI)...
+   >> Backend running on http://localhost:8000 (PID: 392359)
+   >> Detected Local IP for Frontend: 10.58.48.80
+---------------------------------------
+2. Setting up Frontend Web (Expo)...
+   >> Starting Frontend Web...
+   >> Frontend Web running on http://localhost:8081 (PID: 392364)
+---------------------------------------
+✅ All services started! Press Ctrl+C to stop all.
+INFO:     Will watch for changes in these directories: ['/home/lunadogz/Food-AI/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [392359] using WatchFiles
+
+> food-ai-mobile@1.0.0 web
+> expo start --web
+
+Starting project at /home/lunadogz/Food-AI/mobile-app
+INFO:     Started server process [392394]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web Bundled 384ms node_modules/expo/AppEntry.js (535 modules)
+ LOG  [web] Logs will appear in the browser console
+/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/google/api_core/_python_version_support.py:275: FutureWarning: You are using a Python version (3.10.12) which Google will stop supporting in new releases of google.api_core once it reaches its end of life (2026-10-04). Please upgrade to the latest Python version, or at least Python 3.11, to continue receiving updates for google.api_core past that date.
+  warnings.warn(message, FutureWarning)
+/home/lunadogz/Food-AI/backend/app/providers/gemini_nutrition_provider.py:7: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+❌ Gemini API error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash
+Please retry in 58.238667341s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-3-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 58
+}
+]
+🚀 Starting Food & Nutrition Analysis API v0.1.0
+INFO:     10.58.48.80:38690 - "POST /api/v1/analyze/image HTTP/1.1" 200 OK
+Web node_modules/expo/AppEntry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 26ms node_modules/expo/AppEntry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+❌ Gemini API error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash
+Please retry in 51.678551223s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-3-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 51
+}
+]
+❌ Gemini API error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash
+Please retry in 51.479419114s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-3-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 51
+}
+]
+INFO:     10.58.48.80:58372 - "POST /api/v1/analyze/image HTTP/1.1" 200 OK
+Web node_modules/expo/AppEntry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web Bundled 22ms node_modules/expo/AppEntry.js (1 module)
+ LOG  [web] Logs will appear in the browser console
+❌ Gemini API error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash
+Please retry in 54.206409897s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-3-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 54
+}
+]
+❌ Gemini API error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash
+Please retry in 54.022700156s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-3-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 54
+}
+]
+INFO:     10.58.48.80:45844 - "POST /api/v1/analyze/image HTTP/1.1" 200 OK

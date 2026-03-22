@@ -1,0 +1,64 @@
+=======================================
+  Starting Food AI Project Services
+  (Auto-setup enabled)
+=======================================
+1. Setting up Backend...
+   >> Running database migrations...
+Traceback (most recent call last):
+  File "/home/lunadogz/Food-AI/backend/venv/bin/alembic", line 8, in <module>
+    sys.exit(main())
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 641, in main
+    CommandLine(prog=prog).main(argv=argv)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 631, in main
+    self.run_cmd(cfg, options)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/config.py", line 608, in run_cmd
+    fn(
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/command.py", line 403, in upgrade
+    script.run_env()
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/script/base.py", line 583, in run_env
+    util.load_python_file(self.dir, "env.py")
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/util/pyfiles.py", line 95, in load_python_file
+    module = load_module_py(module_id, path)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/alembic/util/pyfiles.py", line 113, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/home/lunadogz/Food-AI/backend/alembic/env.py", line 78, in <module>
+    run_migrations_online()
+  File "/home/lunadogz/Food-AI/backend/alembic/env.py", line 60, in run_migrations_online
+    connectable = engine_from_config(
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 811, in engine_from_config
+    return create_engine(url, **options)
+  File "<string>", line 2, in create_engine
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/util/deprecations.py", line 281, in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/create.py", line 552, in create_engine
+    entrypoint = u._get_entrypoint()
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/engine/url.py", line 755, in _get_entrypoint
+    cls = registry.load(name)
+  File "/home/lunadogz/Food-AI/backend/venv/lib/python3.10/site-packages/sqlalchemy/util/langhelpers.py", line 374, in load
+    raise exc.NoSuchModuleError(
+sqlalchemy.exc.NoSuchModuleError: Can't load plugin: sqlalchemy.dialects:driver
+   >> Starting Backend API (FastAPI)...
+   >> Backend running on http://localhost:8000 (PID: 389906)
+   >> Detected Local IP for Frontend: 10.58.48.80
+---------------------------------------
+2. Setting up Frontend Web (Expo)...
+   >> Starting Frontend Web...
+   >> Frontend Web running on http://localhost:8081 (PID: 389911)
+---------------------------------------
+✅ All services started! Press Ctrl+C to stop all.
+INFO:     Will watch for changes in these directories: ['/home/lunadogz/Food-AI/backend']
+ERROR:    [Errno 98] Address already in use
+
+> food-ai-mobile@1.0.0 web
+> expo start --web
+
+Starting project at /home/lunadogz/Food-AI/mobile-app
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web Bundled 444ms node_modules/expo/AppEntry.js (555 modules)
+Web node_modules/expo/AppEntry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.4% (542/555)
+ LOG  [web] Logs will appear in the browser console
+Killed

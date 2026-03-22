@@ -1,0 +1,33 @@
+# FastAPI and ASGI server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6  # For file uploads
+
+# Pydantic for schemas and settings
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Database - PostgreSQL with async support
+sqlalchemy[asyncio]==2.0.25
+asyncpg==0.29.0  # Async PostgreSQL driver
+alembic==1.13.1  # Database migrations
+
+# HTTP client for AI service communication
+httpx==0.26.0
+
+# Gemini AI SDK (new SDK — replaces deprecated google-generativeai)
+google-genai>=1.0.0
+
+# Local YOLO inference (replaces Roboflow API)
+ultralytics>=8.0.0      # YOLOv8/v11 — installs torch automatically
+pillow>=10.0.0          # Image loading for YOLO inference
+
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Development dependencies (optional)
+# pytest==7.4.4
+# pytest-asyncio==0.23.3
+# black==24.1.1
+# ruff==0.1.14
