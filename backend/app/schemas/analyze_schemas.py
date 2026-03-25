@@ -34,6 +34,14 @@ class FoodAnalysisResponse(BaseModel):
     annotated_image: Optional[str] = Field(None, description="Base64-encoded JPEG of the image with bounding boxes drawn by YOLO")
     processing_time_ms: float = Field(..., description="Processing time in milliseconds")
     message: Optional[str] = Field(None, description="Additional message or error details")
+    food_detected: bool = Field(
+        False,
+        description="True if YOLO/Gemini pipeline found at least one food item in the image",
+    )
+    meal_recommendations: List[str] = Field(
+        default_factory=list,
+        description="Deduped Gemini meal recommendations for next meals (Thai)",
+    )
     
     class Config:
         json_schema_extra = {

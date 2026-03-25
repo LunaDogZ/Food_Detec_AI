@@ -105,16 +105,17 @@ class GeminiNutritionProvider(NutritionProvider):
         food_names: list[str],
         quantity_grams: float,
         image_bytes: Optional[bytes] = None,
-    ) -> list[NutritionData]:
+    ) -> tuple[list[NutritionData], list[str]]:
         """
         One Gemini call for all YOLO labels on the same image (reduces RPM / quota usage vs N calls).
+        Returns (per-label nutrition, plate-level recommendation strings in Thai).
         On quota or API failure, returns heuristic fallbacks for every label (same as sequential path).
         """
         if not food_names:
-            return []
+            return [], []
         if not self.client:
             logger.error("Cannot get nutrition batch: Gemini client not initialized")
-            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names]
+            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names], []
 
         try:
             prompt = self._create_batch_nutrition_prompt(food_names, quantity_grams)
@@ -134,7 +135,7 @@ class GeminiNutritionProvider(NutritionProvider):
                 logger.warning(
                     "⚠️ Gemini unavailable after retries — using heuristic fallback nutrition (batch)"
                 )
-            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names]
+            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names], []
 
     async def search_food(self, query: str, limit: int = 5) -> list[dict]:
         """
@@ -212,7 +213,7 @@ Please provide the following information in JSON format:
     "warnings": ["list warnings/considerations in Thai language"],
     "daily_recommendations": ["list recommendations for the next meals to balance daily nutrition in Thai language"],
     "serving_size_description": "typical serving size description",
-    "food_group": "Primary Group (Protein, Carbs, Vegetable, Fruit, Fat)"
+    "food_group": "One of: Carbs, Protein, Vegetable, Fruit, Dairy (Thai อาหาร 5 หมู่)"
 }}
 
 Important:
@@ -236,14 +237,17 @@ Example daily_recommendations (in Thai):
     def _create_batch_nutrition_prompt(self, food_names: list[str], quantity_grams: float) -> str:
         """Single multimodal request for every YOLO label (same image)."""
         labels_json = json.dumps(food_names, ensure_ascii=False)
+        n = len(food_names)
         return f"""
 You are an expert nutritionist and food AI.
 A YOLO model labeled these regions in ONE image (in order): {labels_json}
 
 Look at the image and, for EACH label, identify the actual food in that region and give nutrition for {quantity_grams} grams of that item.
 
-Return ONLY a JSON array of length {len(food_names)} (same order as the labels). No markdown.
-Each array element MUST be one JSON object with exactly these keys (same schema for every item):
+Return ONLY one JSON object (no markdown). It MUST have exactly these keys:
+1) "plate_recommendations" — array of 6 to 12 strings in Thai. These are holistic, specific advice for THIS exact plate photo: balance vs อาหาร 5 หมู่, gaps (e.g. fiber, veg, protein), sodium/sugar/fat context, what to add or reduce in the *next meal* or later today, hydration. Each line must mention something observable from the plate or the combination of items — avoid generic one-liners that could apply to anyone every day (e.g. do not only say "eat a variety of fruits" without tying to what this meal already has or lacks).
+2) "items" — JSON array of length {n} (same order as the labels). Each element is one JSON object with exactly these keys:
+
 {{
     "calories": <number>,
     "protein_grams": <number>,
@@ -254,17 +258,19 @@ Each array element MUST be one JSON object with exactly these keys (same schema 
     "sodium_mg": <number>,
     "vitamins": ["..."],
     "minerals": ["..."],
-    "health_benefits": ["... in Thai"],
-    "warnings": ["... in Thai"],
-    "daily_recommendations": ["... in Thai"],
+    "health_benefits": ["2-4 short items in Thai"],
+    "warnings": ["1-3 short items in Thai if relevant, else empty array"],
+    "daily_recommendations": ["EXACTLY 4 distinct strings in Thai per item — each must reference this specific food or how it pairs with other items on the plate; include concrete next-meal actions (เพิ่มเครื่องเคียง ลด X เปลี่ยนเป็น Y สัดส่วน)"],
     "serving_size_description": "string",
-    "food_group": "Primary Group (Protein, Carbs, Vegetable, Fruit, Fat)"
+    "food_group": "One primary Thai 5-group category in English: Carbs (rice, noodles, bread, grains), Protein (meat, fish, egg, legumes), Vegetable, Fruit, Dairy (milk, yogurt, cheese). Use Carbs for starchy foods; avoid Fat as the only group when a better fit exists."
 }}
 
 Rules:
-- Base values on the EXACT quantity {quantity_grams}g for that item
-- health_benefits, warnings, daily_recommendations in Thai (ภาษาไทย)
+- Base nutrition values on the EXACT quantity {quantity_grams}g for that item
+- health_benefits, warnings, daily_recommendations, plate_recommendations in Thai (ภาษาไทย)
 - If a label is vague, infer the most likely food from the image
+- food_group must be one of: Carbs, Protein, Vegetable, Fruit, Dairy (Thai อาหาร 5 หมู่ — map ข้าวแป้ง→Carbs, เนื้อ/ไข่/ถั่ว→Protein, ผัก→Vegetable, ผลไม้→Fruit, นม→Dairy)
+- Do not repeat the same sentence in plate_recommendations and every daily_recommendations entry; vary wording and focus
 """
 
     @staticmethod
@@ -393,8 +399,20 @@ Rules:
         response,
         food_names: list[str],
         quantity_grams: float,
-    ) -> list[NutritionData]:
-        """Parse JSON array from Gemini into one NutritionData per label."""
+    ) -> tuple[list[NutritionData], list[str]]:
+        """Parse JSON object (or legacy array) from Gemini into NutritionData list + plate-level strings."""
+
+        def _normalize_plate(recs: object) -> list[str]:
+            if not isinstance(recs, list):
+                return []
+            out: list[str] = []
+            for x in recs:
+                if isinstance(x, str):
+                    t = x.strip()
+                    if t:
+                        out.append(t)
+            return out
+
         try:
             response_text = response.text.strip()
             if response_text.startswith('```json'):
@@ -403,20 +421,36 @@ Rules:
                 response_text = response_text.split('```')[1].split('```')[0].strip()
 
             raw = json.loads(response_text)
-            if not isinstance(raw, list):
-                raise ValueError("expected JSON array")
 
-            out: list[NutritionData] = []
+            # Legacy: plain array of per-item objects
+            if isinstance(raw, list):
+                out: list[NutritionData] = []
+                for i, name in enumerate(food_names):
+                    if i < len(raw) and isinstance(raw[i], dict):
+                        out.append(self._nutrition_from_dict(raw[i], name, quantity_grams))
+                    else:
+                        out.append(self._make_fallback_nutrition(name, quantity_grams))
+                return out, []
+
+            if not isinstance(raw, dict):
+                raise ValueError("expected JSON object or array")
+
+            plate_recommendations = _normalize_plate(raw.get("plate_recommendations"))
+            items_raw = raw.get("items")
+            if not isinstance(items_raw, list):
+                items_raw = []
+
+            out_items: list[NutritionData] = []
             for i, name in enumerate(food_names):
-                if i < len(raw) and isinstance(raw[i], dict):
-                    out.append(self._nutrition_from_dict(raw[i], name, quantity_grams))
+                if i < len(items_raw) and isinstance(items_raw[i], dict):
+                    out_items.append(self._nutrition_from_dict(items_raw[i], name, quantity_grams))
                 else:
-                    out.append(self._make_fallback_nutrition(name, quantity_grams))
-            return out
+                    out_items.append(self._make_fallback_nutrition(name, quantity_grams))
+            return out_items, plate_recommendations
 
         except (json.JSONDecodeError, ValueError, TypeError) as e:
             logger.error(f"Failed to parse batch JSON: {e}")
-            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names]
+            return [self._make_fallback_nutrition(n, quantity_grams) for n in food_names], []
 
     def _parse_gemini_response(
         self,

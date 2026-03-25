@@ -70,7 +70,9 @@ class FoodAnalysisService:
                     total_nutrition=None,
                     annotated_image=annotated_image,
                     processing_time_ms=round((time.time() - start_time) * 1000, 2),
-                    message="No food items detected in the image."
+                    message="No food items detected in the image.",
+                    food_detected=False,
+                    meal_recommendations=[],
                 )
             
             # 2. Get nutrition info for each detected food
@@ -96,11 +98,13 @@ class FoodAnalysisService:
             
             # One Gemini multimodal call for all labels (avoids N× RPM / quota hits per image)
             label_names = [f.name for f in detected_foods]
-            nutrition_list = await self.gemini_provider.get_nutrition_batch(
+            nutrition_list, plate_recommendations = await self.gemini_provider.get_nutrition_batch(
                 label_names,
                 DEFAULT_PORTION_GRAMS,
                 image_bytes,
             )
+            if plate_recommendations:
+                all_recommendations.extend(plate_recommendations)
 
             for food, nutrition in zip(detected_foods, nutrition_list):
                 if nutrition:
@@ -163,8 +167,11 @@ class FoodAnalysisService:
                 explanation_parts.append("⚠️ **ข้อควรระวัง:**\n" + "\n".join([f"- {w}" for w in set(all_warnings)]))
                 
             # 4. Daily Recommendations
-            if all_recommendations:
-                explanation_parts.append("💡 **คำแนะนำมื้อต่อไป:**\n" + "\n".join([f"- {r}" for r in set(all_recommendations)]))
+            meal_recommendations = list(dict.fromkeys(all_recommendations))
+            if meal_recommendations:
+                explanation_parts.append(
+                    "💡 **คำแนะนำมื้อต่อไป:**\n" + "\n".join([f"- {r}" for r in meal_recommendations])
+                )
             
             gemini_explanation = "\n\n".join(explanation_parts) if explanation_parts else "ไม่พบข้อมูลโภชนาการเพิ่มเติม"
             
@@ -183,7 +190,9 @@ class FoodAnalysisService:
                 gemini_explanation=gemini_explanation,
                 annotated_image=annotated_image,
                 processing_time_ms=round(processing_time, 2),
-                message=f"Successfully analyzed {len(processed_foods)} food items."
+                message=f"Successfully analyzed {len(processed_foods)} food items.",
+                food_detected=len(processed_foods) > 0,
+                meal_recommendations=meal_recommendations,
             )
             
         except Exception as e:
@@ -192,7 +201,9 @@ class FoodAnalysisService:
             return FoodAnalysisResponse(
                 success=False,
                 processing_time_ms=round((time.time() - start_time) * 1000, 2),
-                message=f"Error analyzing image: {str(e)}"
+                message=f"Error analyzing image: {str(e)}",
+                food_detected=False,
+                meal_recommendations=[],
             )
     
     async def get_analysis_history(self, limit: int = 10) -> list:

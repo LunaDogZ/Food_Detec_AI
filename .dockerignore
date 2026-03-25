@@ -1,0 +1,11 @@
+.git
+.gitignore
+backend/venv
+backend/__pycache__
+backend/.pytest_cache
+backend/alembic/__pycache__
+backend/app/__pycache__
+**/*.pyc
+.env
+node_modules
+*.log

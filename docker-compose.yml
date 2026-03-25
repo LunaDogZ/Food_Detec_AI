@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    container_name: food-ai-app
+    ports:
+      - "8000:8000"
+    # Environment variables can be provided here or via an .env file.
+    # We pass the GEMINI_API_KEY from the host environment if available.
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - DEBUG=False
+    restart: unless-stopped

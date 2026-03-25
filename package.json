@@ -1,0 +1,13 @@
+{
+  "name": "food-ai",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:frontend": "npm run build --prefix frontend",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

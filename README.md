@@ -16,7 +16,20 @@ cd ~/Food-AI
 
 หากใช้งาน Gemini หรือบริการภายนอก ให้ใส่ API Key ใน `backend/.env` ตามที่ต้องการ
 
-## 2. หยุดระบบ
+## 2. รันด้วย Docker (สำหรับอาจารย์หรือรันบนเครื่องอื่น)
+
+หากต้องการนำไปรันบนเครื่องอื่นโดยไม่ต้องติดตั้ง Python หรือไลบรารีต่างๆ เอง สามารถใช้ Docker ได้เลย (จำเป็นต้องมี Docker และ Docker Compose บนเครื่อง)
+
+```bash
+cd Food-AI
+docker compose up -d
+```
+- ระบบจะดาวน์โหลดและติดตั้ง dependencies ทั้งหมดใน Container 
+- เข้าใช้งาน **หน้าเว็บ (UI):** http://localhost:8000
+- หากต้องการดู log ใช้คำสั่ง `docker compose logs -f`
+- หยุดระบบ `docker compose down`
+
+## 3. หยุดระบบ (กรณีรันด้วย start.sh ปกติ)
 
 ```bash
 cd ~/Food-AI
