@@ -17,6 +17,12 @@ settings = get_settings()
 _GEMINI_MAX_RETRIES = 4
 _GEMINI_BASE_DELAY_SEC = 1.2
 
+_VITAMIN_MINERAL_RICH_FOODS = (
+    "potato", "tomato", "cabbage", "cucumber", "broccoli", 
+    "carrot", "onion", "garlic", "pepper", "cauliflower", 
+    "lettuce", "mango", "banana", "strawberry"
+)
+
 
 class GeminiNutritionProvider(NutritionProvider):
     """
@@ -365,6 +371,17 @@ Rules:
 
     def _nutrition_from_dict(self, data: dict, food_name: str, quantity_grams: float) -> NutritionData:
         """Build NutritionData from one Gemini JSON object."""
+        vitamins = data.get('vitamins', [])
+        minerals = data.get('minerals', [])
+        
+        # Ensure 'วิตามิน' and 'เกลือแร่' are present for specific fruits/veggies
+        lower_name = food_name.lower()
+        if any(food in lower_name for food in _VITAMIN_MINERAL_RICH_FOODS):
+            if not any("วิตามิน" in str(v) for v in vitamins):
+                vitamins.append("วิตามิน")
+            if not any("เกลือแร่" in str(m) for m in minerals):
+                minerals.append("เกลือแร่")
+
         nutrition_data = NutritionData(
             food_name=food_name,
             quantity_grams=quantity_grams,
@@ -375,8 +392,8 @@ Rules:
             fiber_grams=float(data.get('fiber_grams', 0)) if data.get('fiber_grams') else None,
             sugar_grams=float(data.get('sugar_grams', 0)) if data.get('sugar_grams') else None,
             sodium_mg=float(data.get('sodium_mg', 0)) if data.get('sodium_mg') else None,
-            vitamins=data.get('vitamins', []),
-            minerals=data.get('minerals', []),
+            vitamins=vitamins,
+            minerals=minerals,
             source="Gemini AI",
             confidence=0.9,
             food_group=data.get('food_group', 'Unknown'),
@@ -522,6 +539,14 @@ Rules:
         """
         scale = max(quantity_grams, 1.0) / 100.0
         cal, p, c, f = self._rough_nutrition_per_100g(food_name)
+        
+        vitamins = []
+        minerals = []
+        lower_name = food_name.lower()
+        if any(food in lower_name for food in _VITAMIN_MINERAL_RICH_FOODS):
+            vitamins.append("วิตามิน")
+            minerals.append("เกลือแร่")
+            
         return NutritionData(
             food_name=food_name,
             quantity_grams=quantity_grams,
@@ -529,8 +554,8 @@ Rules:
             protein_grams=round(p * scale, 2),
             carbs_grams=round(c * scale, 2),
             fat_grams=round(f * scale, 2),
-            vitamins=[],
-            minerals=[],
+            vitamins=vitamins,
+            minerals=minerals,
             source="ประมาณการเบื้องต้น (Gemini ไม่พร้อมใช้งาน)",
             confidence=0.35,
             food_group="Unknown",
