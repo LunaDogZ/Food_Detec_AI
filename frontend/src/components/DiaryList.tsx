@@ -83,8 +83,10 @@ export function DiaryList({
           typeof e.foodDetected === 'boolean' ? e.foodDetected : !!(e.foods && e.foods.length)
         const fg = computeMealCoverage(e)
         const hit = countFiveHit(fg)
-        const v = (e.nutrition?.vitamins || []).filter((x) => String(x || '').trim()).length
-        const m = (e.nutrition?.minerals || []).filter((x) => String(x || '').trim()).length
+        const vFromApi = (e.nutrition?.vitamins || []).filter((x) => String(x || '').trim()).length
+        const mFromApi = (e.nutrition?.minerals || []).filter((x) => String(x || '').trim()).length
+        const v = fg.vitamins || vFromApi > 0
+        const m = fg.minerals || mFromApi > 0
 
         return (
           <li key={e.id} className="diary-item">
@@ -142,8 +144,8 @@ export function DiaryList({
               </p>
               <FivePillsCompact fg={fg} />
               <p className="diary-item__micro muted small">
-                วิตามิน <span className="micro-yn">{v > 0 ? 'มี' : 'ไม่มี'}</span> · เกลือแร่{' '}
-                <span className="micro-yn">{m > 0 ? 'มี' : 'ไม่มี'}</span>
+                วิตามิน <span className="micro-yn">{v ? 'มี' : 'ไม่มี'}</span> · เกลือแร่{' '}
+                <span className="micro-yn">{m ? 'มี' : 'ไม่มี'}</span>
               </p>
               <MealRecs lines={e.mealRecommendations} />
               <GeminiDetail text={e.gemini_explanation} />

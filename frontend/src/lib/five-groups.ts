@@ -58,6 +58,83 @@ function has(s: string, words: string[]) {
   return words.some((w) => s.includes(w))
 }
 
+/**
+ * อิงชื่อที่ YOLO/Gemini ระบุ (ไม่ใช่แค่ food_group) — เมื่อหมวดเป็น Unknown แต่ชื่อชัดว่าเป็นผัก/ผลไม้
+ * ให้นับวิตามิน + เกลือแร่ + คาร์บตามหลักโภชนาการ
+ */
+export function mapFoodNameToCoverage(raw: string | null | undefined): Record<CoverageId, boolean> {
+  const o = emptyCoverage()
+  if (raw == null || typeof raw !== 'string') return o
+  const t = raw.toLowerCase().trim().replace(/_/g, ' ')
+  if (!t) return o
+
+  if (
+    has(t, [
+      'broccoli',
+      'carrot',
+      'asparagus',
+      'spinach',
+      'kale',
+      'lettuce',
+      'cabbage',
+      'cauliflower',
+      'cucumber',
+      'tomato',
+      'pepper',
+      'eggplant',
+      'onion',
+      'garlic',
+      'mushroom',
+      'bean sprout',
+      'morning glory',
+      'green bean',
+      'snap pea',
+      'corn',
+      'potato',
+      'sweet potato',
+      'pumpkin',
+      'veg',
+      'vegetable',
+      'salad',
+      'ผัก',
+      'คะน้า',
+      'บรอกโคลี',
+      'แครอท',
+      'มะเขือ',
+      'ถั่ว',
+    ])
+  ) {
+    o.vitamins = true
+    o.minerals = true
+    o.carbs = true
+  }
+
+  if (
+    has(t, [
+      'fruit',
+      'apple',
+      'banana',
+      'orange',
+      'mango',
+      'berry',
+      'grape',
+      'melon',
+      'pineapple',
+      'ผลไม้',
+      'กล้วย',
+      'ส้ม',
+      'มะม่วง',
+      'แตงโม',
+    ])
+  ) {
+    o.vitamins = true
+    o.minerals = true
+    o.carbs = true
+  }
+
+  return o
+}
+
 /** จาก food_group (YOLO/Gemini) — ไม่มีข้อมูลแคลอรี่รายมื้อ */
 export function mapFoodGroupToCoverage(raw: string | null | undefined): Record<CoverageId, boolean> {
   const o = emptyCoverage()
@@ -153,7 +230,7 @@ export function coverageFromFoods(foods: FoodItem[] | undefined): Record<Coverag
   const o = emptyCoverage()
   if (!foods?.length) return o
   for (const f of foods) {
-    const c = mapFoodGroupToCoverage(f.food_group)
+    const c = mergeOr(mapFoodGroupToCoverage(f.food_group), mapFoodNameToCoverage(f.name))
     for (const id of COVERAGE_IDS) {
       if (c[id]) o[id] = true
     }

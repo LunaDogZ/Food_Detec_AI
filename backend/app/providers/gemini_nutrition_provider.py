@@ -18,9 +18,39 @@ _GEMINI_MAX_RETRIES = 4
 _GEMINI_BASE_DELAY_SEC = 1.2
 
 _VITAMIN_MINERAL_RICH_FOODS = (
-    "potato", "tomato", "cabbage", "cucumber", "broccoli", 
-    "carrot", "onion", "garlic", "pepper", "cauliflower", 
-    "lettuce", "mango", "banana", "strawberry"
+    "potato",
+    "tomato",
+    "cabbage",
+    "cucumber",
+    "broccoli",
+    "carrot",
+    "onion",
+    "garlic",
+    "pepper",
+    "cauliflower",
+    "lettuce",
+    "mango",
+    "banana",
+    "strawberry",
+    "asparagus",
+    "spinach",
+    "kale",
+    "eggplant",
+    "mushroom",
+    "zucchini",
+    "squash",
+    "pumpkin",
+    "sweet potato",
+    "green bean",
+    "snap pea",
+    "bean sprout",
+    "veg",
+    "vegetable",
+    "salad",
+)
+
+_VEG_FRUIT_GROUPS_FROZEN = frozenset(
+    {"vegetable", "fruit", "veg", "ผัก", "ผลไม้"}
 )
 
 
@@ -369,18 +399,62 @@ Rules:
             raise last_err
         raise RuntimeError("Gemini: no response")
 
+    @staticmethod
+    def _normalize_vitamin_mineral_list(raw) -> list[str]:
+        """Gemini may return null, a string, dict, or list — always produce clean str list."""
+        if raw is None:
+            return []
+        if isinstance(raw, str):
+            t = raw.strip()
+            return [t] if t else []
+        if isinstance(raw, dict):
+            parts: list[str] = []
+            for k, v in raw.items():
+                ks = str(k).strip()
+                vs = str(v).strip() if v is not None else ""
+                if ks and vs:
+                    parts.append(f"{ks}: {vs}")
+                elif ks:
+                    parts.append(ks)
+            return parts
+        if not isinstance(raw, list):
+            return []
+        out: list[str] = []
+        for item in raw:
+            if item is None:
+                continue
+            if isinstance(item, dict):
+                out.extend(GeminiNutritionProvider._normalize_vitamin_mineral_list(item))
+                continue
+            s = str(item).strip()
+            if s:
+                out.append(s)
+        return out
+
     def _nutrition_from_dict(self, data: dict, food_name: str, quantity_grams: float) -> NutritionData:
         """Build NutritionData from one Gemini JSON object."""
-        vitamins = data.get('vitamins', [])
-        minerals = data.get('minerals', [])
-        
-        # Ensure 'วิตามิน' and 'เกลือแร่' are present for specific fruits/veggies
-        lower_name = food_name.lower()
-        if any(food in lower_name for food in _VITAMIN_MINERAL_RICH_FOODS):
-            if not any("วิตามิน" in str(v) for v in vitamins):
-                vitamins.append("วิตามิน")
-            if not any("เกลือแร่" in str(m) for m in minerals):
-                minerals.append("เกลือแร่")
+        vitamins = self._normalize_vitamin_mineral_list(data.get("vitamins"))
+        minerals = self._normalize_vitamin_mineral_list(data.get("minerals"))
+
+        lower_name = food_name.lower().replace("_", " ")
+        food_group_raw = str(data.get("food_group") or "").strip().lower()
+
+        def _needs_generic_vitamin_tags() -> bool:
+            if any(food in lower_name for food in _VITAMIN_MINERAL_RICH_FOODS):
+                return True
+            fg = food_group_raw
+            if fg in _VEG_FRUIT_GROUPS_FROZEN:
+                return True
+            if "vegetable" in fg or "fruit" in fg or fg == "veg":
+                return True
+            return False
+
+        # UI / dashboard: non-empty vitamins & minerals arrays → "มีวิตามิน/เกลือแร่"
+        if _needs_generic_vitamin_tags():
+            if not vitamins:
+                vitamins.append("วิตามิน (ผัก/ผลไม้)")
+            if not minerals:
+                minerals.append("เกลือแร่ (ผัก/ผลไม้)")
 
         nutrition_data = NutritionData(
             food_name=food_name,

@@ -118,14 +118,20 @@ class FoodAnalysisService:
                     if nutrition.sugar_grams:
                         total_nutrition.sugar = (total_nutrition.sugar or 0) + nutrition.sugar_grams
                         
-                    # Aggregate vitamins and minerals (Set union)
-                    current_vitamins = set(total_nutrition.vitamins)
-                    current_vitamins.update(nutrition.vitamins)
-                    total_nutrition.vitamins = list(current_vitamins)
-                    
-                    current_minerals = set(total_nutrition.minerals)
-                    current_minerals.update(nutrition.minerals)
-                    total_nutrition.minerals = list(current_minerals)
+                    # Aggregate vitamins and minerals (set union; tolerate None / non-str from APIs)
+                    current_vitamins = {str(x).strip() for x in (total_nutrition.vitamins or []) if str(x).strip()}
+                    for x in nutrition.vitamins or []:
+                        s = str(x).strip()
+                        if s:
+                            current_vitamins.add(s)
+                    total_nutrition.vitamins = sorted(current_vitamins)
+
+                    current_minerals = {str(x).strip() for x in (total_nutrition.minerals or []) if str(x).strip()}
+                    for x in nutrition.minerals or []:
+                        s = str(x).strip()
+                        if s:
+                            current_minerals.add(s)
+                    total_nutrition.minerals = sorted(current_minerals)
 
                     # Assign food group if available
                     if nutrition.food_group:
